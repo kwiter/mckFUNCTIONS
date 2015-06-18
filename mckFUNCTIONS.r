@@ -1358,6 +1358,55 @@ colorRange <- function(percent = .5,colours = c('#AF2F03','white','#027A40'),tra
   )
 }
 
+bivarColor = function(v1 = .5,v2 = .5, cols = c("#64acbe","#627f8c","#574249",
+                                                "#b0d5df","#ad9ea5","#985356",
+                                                "#e8e8e8","#e4acac","#c85a5a"), trans = 0){
+ 
+  red = col2rgb(cols)[1,]/256
+  green = col2rgb(cols)[2,]/256
+  blue = col2rgb(cols)[3,]/256
+  red[red > 1] = 1;green[green > 1] = 1;blue[blue > 1] = 1
+  red[red < 0] = 0;green[green < 0] = 0;blue[blue < 0] = 0
+  x = rep(seq(0,1,length = sqrt(length(cols))),sqrt(length(cols)))
+  y = rep(seq(1,0,length = sqrt(length(cols))),each = sqrt(length(cols)))
+  red = predict(lm(red   ~ x + y),data.frame(x = v1,y = v2))
+  green = predict(lm(green ~ x + y),data.frame(x = v1,y = v2))
+  blue = predict(lm(blue   ~ x + y),data.frame(x = v1,y = v2))
+  red[red > 1] = 1;green[green > 1] = 1;blue[blue > 1] = 1
+  red[red < 0] = 0;green[green < 0] = 0;blue[blue < 0] = 0
+  rgb(red,green,blue,trans)
+
+}
+
+bivarSplineColor = function(v1 = .5,v2 = .5,cols = c("#64acbe","#627f8c","#574249",
+                                                     "#b0d5df","#ad9ea5","#985356",
+                                                     "#e8e8e8","#e4acac","#c85a5a"), trans = 0){
+  require(akima)
+  #fuzWHICH() needs in mckFunctions or helper.github
+  red = col2rgb(cols)[1,]/256
+  green = col2rgb(cols)[2,]/256
+  blue = col2rgb(cols)[3,]/256
+  x = rep(seq(0,1,length = sqrt(length(cols))),sqrt(length(cols)))
+  y = rep(seq(1,0,length = sqrt(length(cols))),each = sqrt(length(cols)))
+  surface = interp(x= y,y= x,z = red)
+  xs = fuzWHICH(v1,surface$y)
+  ys = fuzWHICH(v2,surface$x)
+  red = surface$z[cbind(ys,xs)]
+  surface = interp(x= y,y= x,z = green)
+  xs = fuzWHICH(v1,surface$y)
+  ys = fuzWHICH(v2,surface$x)
+  green = surface$z[cbind(ys,xs)]
+  surface = interp(x= y,y= x,z = blue)
+  xs = fuzWHICH(v1,surface$y)
+  ys = fuzWHICH(v2,surface$x)
+  blue = surface$z[cbind(ys,xs)]
+  rgb(red,green,blue,trans)
+  #rgb(predict(lm(red   ~ x + y),data.frame(x = v1,y = v2)),
+  #    predict(lm(green ~ x + y),data.frame(x = v1,y = v2)),
+  #    predict(lm(blue   ~ x + y),data.frame(x = v1,y = v2)))
+  
+}
+
 nColor <- function(number = 2,base.col = '#AF2F03',trans = 1,distinct = FALSE){
   b.col = rgb2hsv(col2rgb(base.col))
   spread = 1/number
@@ -1875,13 +1924,13 @@ spline.poly <- function(xy, vertices, k=3, ...) {
 }
 
 #distance between (x,y) and (x,y) matrix
-distance = function(valM,M){#distance between (x,y) and (x,y) matrix
+distance = function(valM,M){
   
   sqrt((M[,1]-valM[1])^2 + (M[,2]-valM[2])^2) 
   
 }
 
-#calculate angles
+
 angleTo <- function(valM,M){ #output in degrees
   
   tx = M[,1]-valM[1]
@@ -1893,8 +1942,8 @@ angleTo <- function(valM,M){ #output in degrees
 }
 
 
-#function to give spatial 2d quantiles based on sectors
-spatialQuant = function(xyMat,nbrks = 10,quants = c(.025,.975)){ #2d quantiles
+#
+spatialQuant = function(xyMat,nbrks = 10,quants = c(.025,.975)){
   stdX = sd(xyMat[,1],na.rm=T)
   stdY = sd(xyMat[,2],na.rm=T)
   
@@ -1941,7 +1990,7 @@ stretch <- function(dat,finMax,finMin,datMax,datMin){#stretch to fit new range
   res
 }
 
-designCombn <- function(mat){#design matrix of all combinations
+designCombn <- function(mat){
   comb = numeric()
   for(i in 1:ncol(mat)){
     
@@ -1956,8 +2005,7 @@ designCombn <- function(mat){#design matrix of all combinations
   comb
 }
 
-##
-allLm <- function(resp,mat,Int = T){#run all combinations of linear mdoels
+allLm <- function(resp,mat,Int = T){
   combs = designCombn(mat)
   if(Int == T){
     combs = cbind(rep(1,nrow(combs)),combs)
@@ -1980,9 +2028,7 @@ allLm <- function(resp,mat,Int = T){#run all combinations of linear mdoels
   list(coefs = combs,ICs = ICs, avgB = avgB)
 }
 
-###
-
-fillNAs <- function(mat,resp = mat[,1]){##
+fillNAs <- function(mat,resp = mat[,1]){
   
   for(i in 1:ncols(design)){
     
@@ -2012,3 +2058,34 @@ progress = function(count, total = null, interval = 1){ #progress bar
   }
   if(count == total){cat("\n Complete \n")}
 }
+
+#print(paste("It has been", as.numeric(as.Date(Sys.time()) - as.Date('1980-11-09 04:06:00') ),"days."))
+
+matchAllCol = function(mat,vect,TorF = FALSE){
+
+  if(ncol(mat) != length(vect))return("dimensions don't match")
+  apply(mat,1,function(x) paste(x,collapse=""))
+  if(TorF){
+    apply(mat,1,function(x) paste(x,collapse="")) == paste(vect,collapse="") 
+  }else{
+    which(apply(mat,1,function(x) paste(x,collapse="")) == paste(vect,collapse=""))
+  }  
+}
+
+#percent overlap of pop a and b
+overlap = function(a,b){
+  n = max(length(a),length(b),10000)
+  a = sample(a,n,replace = T) #make samples equal size
+  b = sample(b,n,replace = T)
+  a95 = quantile(a,.95)
+  b95 = quantile(b,.05)
+  c = c(a,b)
+  overlap = (length(which(b95 < a ))+length(which(b < a95 ))) / length(c) #how much overlap between 95% and other distribution twice
+  aOverB = length(which(b95 < a )) / length(a) #how much of a is greater than 5%b
+  bOverA = length(which(b < a95 )) / length(b) #how much of b is less than 95%a
+  overlap95 = (length(which(b95 < c & c < a95 ))) / length(c) #how much overlap between 95% and 95% of other distribution
+  
+  list(overlap = overlap,aOverB = aOverB,bOverA = bOverA,
+        overlap95 = overlap95, probOverlap = aOverB*bOverA, sampOver = 1- (length(which(a<b))/length(a)))
+}
+
