@@ -1,2 +1,2 @@
-# mckFucntions
+# mckFunctions
 Custom Helper Functions

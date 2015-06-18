@@ -31,9 +31,9 @@ in_mckFUNCTIONS <- function(){
   }
 }
 
-###
+####
 #running weighted average to fill NAs
-###
+####
 
 w.avg <- function(y){ #running weighted average to fill NAs
   whr.val <- which(!is.na(y)) 
