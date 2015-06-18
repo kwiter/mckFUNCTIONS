@@ -1875,13 +1875,13 @@ spline.poly <- function(xy, vertices, k=3, ...) {
 }
 
 #distance between (x,y) and (x,y) matrix
-distance = function(valM,M){
+distance = function(valM,M){#distance between (x,y) and (x,y) matrix
   
   sqrt((M[,1]-valM[1])^2 + (M[,2]-valM[2])^2) 
   
 }
 
-
+#calculate angles
 angleTo <- function(valM,M){ #output in degrees
   
   tx = M[,1]-valM[1]
@@ -1893,8 +1893,8 @@ angleTo <- function(valM,M){ #output in degrees
 }
 
 
-#
-spatialQuant = function(xyMat,nbrks = 10,quants = c(.025,.975)){
+#function to give spatial 2d quantiles based on sectors
+spatialQuant = function(xyMat,nbrks = 10,quants = c(.025,.975)){ #2d quantiles
   stdX = sd(xyMat[,1],na.rm=T)
   stdY = sd(xyMat[,2],na.rm=T)
   
@@ -1941,7 +1941,7 @@ stretch <- function(dat,finMax,finMin,datMax,datMin){#stretch to fit new range
   res
 }
 
-designCombn <- function(mat){#desing matrix of all combinations
+designCombn <- function(mat){#design matrix of all combinations
   comb = numeric()
   for(i in 1:ncol(mat)){
     
@@ -1956,7 +1956,8 @@ designCombn <- function(mat){#desing matrix of all combinations
   comb
 }
 
-allLm <- function(resp,mat,Int = T){
+##
+allLm <- function(resp,mat,Int = T){#run all combinations of linear mdoels
   combs = designCombn(mat)
   if(Int == T){
     combs = cbind(rep(1,nrow(combs)),combs)
@@ -1979,7 +1980,9 @@ allLm <- function(resp,mat,Int = T){
   list(coefs = combs,ICs = ICs, avgB = avgB)
 }
 
-fillNAs <- function(mat,resp = mat[,1]){
+###
+
+fillNAs <- function(mat,resp = mat[,1]){##
   
   for(i in 1:ncols(design)){
     
