@@ -1941,7 +1941,7 @@ stretch <- function(dat,finMax,finMin,datMax,datMin){#stretch to fit new range
   res
 }
 
-designCombn <- function(mat){
+designCombn <- function(mat){#desing matrix of all combinations
   comb = numeric()
   for(i in 1:ncol(mat)){
     
