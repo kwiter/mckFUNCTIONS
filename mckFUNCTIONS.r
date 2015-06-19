@@ -2089,3 +2089,36 @@ overlap = function(a,b){
         overlap95 = overlap95, probOverlap = aOverB*bOverA, sampOver = 1- (length(which(a<b))/length(a)))
 }
 
+#square root of matrix a
+sqrtMat <- function(a){  #square root of matrix a
+  a.eig <- eigen(a)
+  a.eig$vectors %*% diag(sqrt(a.eig$values)) %*% solve(a.eig$vectors)
+}
+
+#sqaure root of matrix
+denman.beavers <- function(mat,maxit=50) {
+  stopifnot(nrow(mat) == ncol(mat))
+  niter <- 0
+  y <- mat
+  z <- diag(rep(1,nrow(mat)))
+  for (niter in 1:maxit) {
+    y.temp <- 0.5*(y+solve(z))
+    z <- 0.5*(z+solve(y))
+    y <- y.temp
+  }
+  return(list(sqrt=y,sqrt.inv=z))
+}
+
+
+#random wishart from clark
+rwish <- function(df,S){
+  
+  z  <- matrix(rnorm(df*nrow(S)),df,nrow(S))%*%chol(S)
+  crossprod(z)
+}
+
+#random inverse wishart from clark
+riwish <- function(v,S){
+  
+  solve(rwish(v,solve(S)))
+}
