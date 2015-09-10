@@ -859,8 +859,8 @@ ranFy <- function(yy,bb,rr){  #iteratively subtracts random effects from y
 }
 
 ############### apply tapply
-tapply.matrix <- function(mat,index,funct,...){ #tapply on matrix mckFUNCTIONS
-  apply(mat,2,function(x){ tapply(x,index,funct,na.rm=T)})  
+tapply.matrix <- function(mat,margin,index,funct,...){ #tapply on matrix mckFUNCTIONS
+  apply(mat,margin,function(x){ tapply(x,index,funct,na.rm=T)})  
 }
 
 
@@ -1923,11 +1923,14 @@ spline.poly <- function(xy, vertices, k=3, ...) {
   cbind(x1, x2)[k < x & x <= n+k, ]
 }
 
-#distance between (x,y) and (x,y) matrix
+#distance between a point and a matrix
 distance = function(valM,M){
-  
-  sqrt((M[,1]-valM[1])^2 + (M[,2]-valM[2])^2) 
-  
+  dims = length(valM)
+  resp = rep(0,dim(M)[1])
+  for(i in 1:dims){
+    resp = resp + (M[,i]-valM[i])^2
+  }
+  sqrt(resp) 
 }
 
 
@@ -2121,4 +2124,40 @@ rwish <- function(df,S){
 riwish <- function(v,S){
   
   solve(rwish(v,solve(S)))
+}
+
+#pastes full name of file address using paste(path, "add",sep="") 
+paths = function(path = path, address){ #
+  
+  paste(path,address,sep="")
+  
+}
+
+## Size combines dim and length
+sz <- function(x){
+  if(is.null(dim(x))){ 
+    len(x)
+  }else{
+    dim(x)
+  }
+}
+
+#bind rows don't worry about matching names
+rbind.all <- function(x1,x2,...){
+  t(cbind(x1,x2,...))
+} 
+
+#Function reads zip into temp folder returns paths 
+pathZip <- function(zipName,fileName = character(),readFiles=T){#Function reads zip into temp folder returns paths 
+  #Function reads zip into temp folder 
+  #Returns path of files
+  #zipName path of zip
+  #fileName: name of files in zip to return path if blank reuturns all paths
+  zipdir = tempdir()
+  names = unzip(zipName, exdir=zipdir, list = T)
+  print(names)
+  names = names[,1]
+  unzip(zipName, exdir=zipdir, list = F)
+  if(len(fileName) == 0 ) fileName = names
+  list(tmpPath = zipdir, fileNames = names, filePath = file.path(zipdir,fileName))
 }
