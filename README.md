@@ -1,3 +1,6 @@
 # mckFunctions
 Custom Helper Functions
-Some of these functions are ugly becayse they were writen years ago when I weas first learning.
+
+These functions have been written over the course of years.
+Some are very speciesfic to my work but most are generally useful.
+Earlier functions will be much uglier than the newest.
