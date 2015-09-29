@@ -136,9 +136,9 @@ path.dir <- function(working.dir = T){ #sets path to dropbox
 #text to columns
 #
 
-TtoC <- function(col,symbol='/'){ #text to columns
+TtoC <- function(col,sep='/'){ #text to columns
   n <- length(col)
-  vect <- unlist(strsplit(col,symbol))
+  vect <- unlist(strsplit(col,sep))
   m <- length(vect)
   matrix(vect,ncol=(m/n),byrow=T)
 }
@@ -400,6 +400,20 @@ rollARmean <- function(y,roll=7){ #roll mean centered on value roll must be odd
   }
   return(ybar)
 }
+
+#####rolling mean ofaround numbers if roll is 6 y[7] = mean(y[4:10])
+previousARmean <- function(y,roll=4){ #roll mean centered on value roll must be odd
+  ybar <- y
+  cof = 1/seq(roll,1,by=-1)
+  for( i in (roll):length(y)){
+    whr <- (i-roll):(i-1)+1
+
+    ybar[i] <- sum(y[i-whr + 1]*rev(cof))/sum(cof)
+    
+  }
+  return(ybar)
+}
+
 
 smTOsp <- function(soilM, soil='tarrus'){ #soil moist to soil potential mckFunctions
   
@@ -1077,7 +1091,7 @@ five38.plot <- function(multiLine,minX,maxX,minY,maxY,Title ="",xTit ="",yTit ="
   axis(1, tick=FALSE, cex.axis=0.9)
   axis(2, tick=FALSE, cex.axis=0.9)
   ManyLinePlots(series = multiLine,NameColUsed=colUsed,boldSeries = embolden, col="dark grey", lwd=1, hlwd=3, hcol="#008ED4")
-  par(opar)
+  on.exit(par(opar))
 }
 #
 # The Economist style many line plot
@@ -1515,8 +1529,16 @@ polarTOcart <- function(angle,radius,inner.c=0){#angle in degrees adds an inner 
 
 
 ####radar Plot
-radarPlot <- function(values,val.l,val.h,scale.within = F,legend = F){
+radarPlot <- function(values,val.l,val.h,scale.within = F,legend = F,color='black'){
+  if(!is.matrix(values)){ 
+    values = t(as.matrix(values))
+    val.l = t(as.matrix(val.l))
+    val.h = t(as.matrix(val.h))
+  }
+  if(is.null(colnames(values))) colnames(values) = 1:ncol(values)
   
+  opar <- par()
+  on.exit(par(opar))
   #scale.within = F
   
   #values <- allQ[,-1] 
@@ -2043,7 +2065,7 @@ fillNAs <- function(mat,resp = mat[,1]){
 }
 
 #progress bar
-progress = function(count, total = null, interval = 1){ #progress bar
+progress = function(count, total = null, interval = 1,startTime = NA){ #progress bar
   #progress bar
   #count: counter of loop
   #total: number when loop completes
@@ -2052,12 +2074,16 @@ progress = function(count, total = null, interval = 1){ #progress bar
   if(count%%interval == 0){
     Ltotal = nchar(total)
     Lcount = nchar(count)
-    cat("\r",paste(count, rep(" ",Ltotal-Lcount),
+    if(is.na(startTime)){
+      cat("\r",paste(count, rep(" ",Ltotal-Lcount),
                    " [",
                    paste(rep("~",floor(width*count/total)),collapse = ""),
                    paste(rep(" ",ceiling(width*(1-(count/total)))),collapse = ""),
                    "] ",round(100*count/total,2),"%",sep=""))
-    flush.console()
+    }else{
+      print((total-count)*(Sys.time() - startTime)/count)
+    }
+    flush.console()    
   }
   if(count == total){cat("\n Complete \n")}
 }
@@ -2161,3 +2187,30 @@ pathZip <- function(zipName,fileName = character(),readFiles=T){#Function reads 
   if(len(fileName) == 0 ) fileName = names
   list(tmpPath = zipdir, fileNames = names, filePath = file.path(zipdir,fileName))
 }
+
+#Converts rgb to hex
+rgb2hex <- function(x){ #converts rgb to hex alpha is [0:256]
+  require(stringr)
+  #x = as.matrix(x)
+  hex <- as.hexmode(x)
+  hex <- as.character(hex)
+  whr = which(str_length(hex) == 1)
+  hex[whr] = paste0("0",hex[whr] )
+  if(length(dim(x)) == 2){
+    hex <- matrix(hex, ncol = ncol(x),byrow=T)
+  }else{
+    hex <- matrix(hex, ncol = length(x),byrow=T)
+  }
+  hex <- apply(hex,1, function(x){paste0(x,collapse = '')})
+  hex <- paste0('#',hex)
+  hex
+}
+
+#list all functions in package
+lsp <-function(package, all.names = FALSE, pattern) {
+  package <- deparse(substitute(package))
+  ls(
+    pos = paste("package", package, sep = ":"),
+    all.names = all.names,
+    pattern = pattern
+  )
