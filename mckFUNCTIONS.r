@@ -2218,7 +2218,6 @@ lsp <-function(package, all.names = FALSE, pattern) {
     pattern = pattern
   )
 }
-<<<<<<< HEAD
 
 
 ##Custom legend for continuous data meant for a map
@@ -2239,6 +2238,3 @@ myLegend <- function(x,y,h,w,colours = c('#ffffb2','#bd0026'),padWhite = T,highV
   text(x+w,max(hs),paste(highVal),adj=c(-0.1,1))
   text(x+w,min(hs),paste(lowVal),adj=c(-0.1,0))
 }
-
-=======
->>>>>>> 7e077e61ae9a0123c76fd61950fa62d64385aa01
