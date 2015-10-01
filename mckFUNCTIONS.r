@@ -2214,3 +2214,4 @@ lsp <-function(package, all.names = FALSE, pattern) {
     all.names = all.names,
     pattern = pattern
   )
+}
