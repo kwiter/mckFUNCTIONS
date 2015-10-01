@@ -1550,8 +1550,10 @@ radarPlot <- function(values,val.l,val.h,scale.within = F,legend = F,color='blac
   max.v <- max(val.h,na.rm=T)
   min.v <- min(val.l,na.rm=T)
   
-  dims = c(ceiling(sqrt(nrow(values))),nrow(values) -ceiling(sqrt(nrow(values))))
-  par(mfrow=c(dims[1],dims[2]),pty='s',mar=c(1,1,2,1),bg='black')
+  dims = c(ceiling(sqrt(nrow(values))),max(1,nrow(values) -ceiling(sqrt(nrow(values)))))
+  if(color == 'black'){col1 = 'black';col2 = 'white'}else{col1 = 'white';col2 = 'black'}
+  
+  par(mfrow=c(dims[1],dims[2]),pty='s',mar=c(1,1,2,1),bg=col1)
   for(i in 1:dim(values)[1]){  #if scaleing within
     
     if(scale.within==T){
@@ -1590,7 +1592,7 @@ radarPlot <- function(values,val.l,val.h,scale.within = F,legend = F,color='blac
     #for(i in 1:dim(values)[1]){  #if scaling amoung
     plot( 1,1,xlim=c(-outer.r,outer.r),ylim=c(-outer.r,outer.r),
           type='n',xlab='',ylab='',main=rownames(values)[i],
-          bty='n',xaxt='n',yaxt='n',col.main='white')
+          bty='n',xaxt='n',yaxt='n',col.main=col2)
     
     point.mat <- val.mat <- out.mat <- inn.mat <- zer.mat <- matrix(NA,dim(values)[2],2) #hold vertices for later use
     for(j in 1:dim(values)[2]){ #plots values
@@ -1662,21 +1664,21 @@ radarPlot <- function(values,val.l,val.h,scale.within = F,legend = F,color='blac
       if(j == dim(values)[2]){ #plots outer lines
         one <- polarTOcart(angles*(j-1),outer.r)
         two <- polarTOcart(angles*0,outer.r)
-        lines(c(one$x,two$x),c(one$y,two$y),lty=1,col='white',lwd=2) 
+        lines(c(one$x,two$x),c(one$y,two$y),lty=1,col=col2,lwd=2) 
         #lines(c(one$x,0),c(one$y,0),lty=2) 
       }else{
         one <- polarTOcart(angles*(j-1),outer.r)
         two <- polarTOcart(angles*j,outer.r)
-        lines(c(one$x,two$x),c(one$y,two$y),lty=1,col='white',lwd=2) 
+        lines(c(one$x,two$x),c(one$y,two$y),lty=1,col=col2,lwd=2) 
         #lines(c(one$x,0),c(one$y,0),lty=2)
       }
       
       if(values[i,j] == 0)next
       par(xpd=T)
       if(colnames(values)[j]=='SL'){
-        text(one$x*(outer.r*1.05)/outer.r,one$y*(outer.r*1.1)/outer.r,GDsGS[i],srt=0 - angles*(j-1),col='white')  
+        text(one$x*(outer.r*1.05)/outer.r,one$y*(outer.r*1.1)/outer.r,GDsGS[i],srt=0 - angles*(j-1),col=col2)  
       }else{
-        text(one$x*(outer.r*1.05)/outer.r,one$y*(outer.r*1.1)/outer.r,colnames(values)[j],srt=0 - angles*(j-1),col='white')
+        text(one$x*(outer.r*1.05)/outer.r,one$y*(outer.r*1.1)/outer.r,colnames(values)[j],srt=0 - angles*(j-1),col=col2)
       }
       par(xpd=F)
     }
@@ -1684,7 +1686,7 @@ radarPlot <- function(values,val.l,val.h,scale.within = F,legend = F,color='blac
     #polygon(x=as.numeric(out.mat[,1]),y=as.numeric(out.mat[,2]),col=rgb(0,0,1,.25),border=NA)
     #polygon(x=as.numeric(out.mat[,1]),y=as.numeric(inn.mat[,2]),col='white',border=NA)
     #polygon(x=as.numeric(zer.mat[,1]),y=as.numeric(out.mat[,2]),col=rgb(1,0,0,.25),border=NA)
-    polygon(x=as.numeric(point.mat[,1]),y=as.numeric(point.mat[,2]),col=1,border=NA) 
+    polygon(x=as.numeric(point.mat[,1]),y=as.numeric(point.mat[,2]),col=col1,border=NA) 
   }
   
   ###legend
@@ -2214,3 +2216,25 @@ lsp <-function(package, all.names = FALSE, pattern) {
     all.names = all.names,
     pattern = pattern
   )
+}
+
+
+##Custom legend for continuous data meant for a map
+myLegend <- function(x,y,h,w,colours = c('#ffffb2','#bd0026'),padWhite = T,highVal = "",lowVal =""){
+  #x: left x all in plot scale
+  #y: bottom y
+  #h: height
+  #w: width 
+  #colours: colors in used in colorRange() 
+  #padWhite: Should scale be padded with white at bottom
+  #highVal lowVal: vlaues to print on legend
+  
+  hs = seq(y,y+h,length=100)
+  cols = colorRange((hs-y)/max((hs-y)),colours = colours,trans = 1)
+  if(padWhite){cols = c('white','white','white','white','white',cols)}
+  for(i in 1:len(cols)) lines(c(x,x+w),c(hs[i],hs[i]),col=cols[i],lwd=1) 
+  rect(x,y,x+w,y+h,border=rgb(.8,.8,.8,.5))
+  text(x+w,max(hs),paste(highVal),adj=c(-0.1,1))
+  text(x+w,min(hs),paste(lowVal),adj=c(-0.1,0))
+}
+
