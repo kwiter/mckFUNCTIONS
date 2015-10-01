@@ -8,5 +8,5 @@ Earlier functions will be much uglier than the newest.
 ## to source straight from github
 
 library(devtools)
-github = "https://raw.githubusercontent.com/kwiter/clarkFunctions.r/master/mckFUNCTIONS.r"
+github = "https://raw.githubusercontent.com/kwiter/mckFUNCTIONS.r/master/mckFUNCTIONS.r"
 source_url(github)
