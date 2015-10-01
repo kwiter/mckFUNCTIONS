@@ -5,10 +5,11 @@ resetPar <- function() {
   op
 }
 
-library(stringr)
-library(plyr)
-library(RcppArmadillo)
-library(Rcpp)
+#Some of these packages may be needed
+#library(stringr)
+#library(plyr)
+#library(RcppArmadillo)
+#library(Rcpp)
 #library(extrafont)
 #loadfonts()
 #multivariate normal density
